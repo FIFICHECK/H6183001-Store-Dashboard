@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P0068001 Store Dashboard — MUJI Hong Kong</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1115;
+    --bg-card: #171a21;
+    --bg-hover: #1e222c;
+    --border: #2a2f3a;
+    --text: #e0e0e0;
+    --text-dim: #9aa3b2;
+    --accent: #c0392b;
+    --accent-light: #e74c3c;
+    --green: #27ae60;
+    --yellow: #f1c40f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang HK", "Microsoft JhengHei", sans-serif;
+    min-height: 100vh;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 18px 0 22px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .logo {
+    width: 44px; height: 44px;
+    background: var(--accent);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 20px; color: #fff;
+    flex-shrink: 0;
+  }
+  .title-block { display: flex; align-items: center; gap: 14px; }
+  h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: 0.3px; }
+  .subtitle { color: var(--text-dim); font-size: 0.85rem; margin-top: 3px; }
+  .store-badge {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .store-badge strong { color: var(--text); font-weight: 600; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 26px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .stat-label { color: var(--text-dim); font-size: 0.8rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .stat-value { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.5px; }
+  .stat-value.money { color: var(--accent-light); }
+  .stat-sub { color: var(--text-dim); font-size: 0.78rem; margin-top: 6px; }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 26px;
+  }
+  .panel-title {
+    font-size: 1.05rem; font-weight: 700;
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel-desc { color: var(--text-dim); font-size: 0.8rem; margin-bottom: 18px; }
+  .chart-wrap { position: relative; height: 320px; }
+
+  .table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  thead th {
+    text-align: left;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    font-weight: 600;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 12px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #232833;
+    white-space: nowrap;
+  }
+  tbody tr:hover { background: var(--bg-hover); }
+  td .date { font-weight: 700; }
+  td .gmv-val { color: var(--accent-light); font-weight: 600; }
+  .badge-final {
+    background: rgba(39, 174, 96, 0.15);
+    color: var(--green);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .badge-partial {
+    background: rgba(241, 196, 15, 0.12);
+    color: var(--yellow);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .dl-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .dl-btn:hover { background: var(--accent-light); }
+
+  footer {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .empty { text-align: center; color: var(--text-dim); padding: 40px 0; font-size: 0.9rem; }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 1.1rem; }
+    .stat-value { font-size: 1.3rem; }
+    .panel { padding: 16px; }
+    .chart-wrap { height: 250px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="title-block">
+      <div class="logo">MU</div>
+      <div>
+        <h1>P0068001 Store Dashboard</h1>
+        <div class="subtitle">每日訂單報表 Daily Order Report</div>
+      </div>
+    </div>
+    <div class="store-badge">🏪 <strong>MUJI Hong Kong</strong> · Designated Online Store</div>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">💰 最新 GMV &nbsp;·&nbsp; Latest GMV</div>
+      <div class="stat-value money" id="stat-latest-gmv">—</div>
+      <div class="stat-sub" id="stat-latest-date">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">📦 訂單行數 &nbsp;·&nbsp; Order Lines</div>
+      <div class="stat-value" id="stat-orders">—</div>
+      <div class="stat-sub">最新報表</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">🧮 總件數 &nbsp;·&nbsp; Total Qty</div>
+      <div class="stat-value" id="stat-qty">—</div>
+      <div class="stat-sub">最新報表</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">🗓️ 報表數量 &nbsp;·&nbsp; Reports</div>
+      <div class="stat-value" id="stat-reports">—</div>
+      <div class="stat-sub">已存檔</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">📈 GMV 走勢 &nbsp;<span style="color:var(--text-dim);font-size:0.8rem;font-weight:400;">GMV Trend</span></div>
+    <div class="panel-desc">每日訂單報表 GMV（Column AA: Total Q×U−D=T）</div>
+    <div class="chart-wrap"><canvas id="gmvChart"></canvas></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">📄 訂單報表 &nbsp;<span style="color:var(--text-dim);font-size:0.8rem;font-weight:400;">Order Reports</span></div>
+    <div class="panel-desc">點擊下載 XLSX 原始檔案（優先 23:59 最終版）</div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>日期 Date</th>
+            <th>GMV</th>
+            <th>訂單 Order Lines</th>
+            <th>件數 Qty</th>
+            <th>版本 Version</th>
+            <th>下載 Download</th>
+          </tr>
+        </thead>
+        <tbody id="report-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>P0068001 Store Dashboard · Data source: MMS 2.0 Daily Order Report · Updated <span id="footer-updated">—</span></footer>
+</div>
+
+<script>
+const MANIFEST_URL = 'data/order_reports_manifest.json';
+let gmvChart = null;
+
+function fmtMoney(n) {
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function parseGmv(str) {
+  if (typeof str === 'number') return str;
+  if (!str) return 0;
+  return parseFloat(String(str).replace(/[$,]/g, '')) || 0;
+}
+
+function renderStats(manifest) {
+  if (!manifest || manifest.length === 0) return;
+  const latest = manifest[0];
+  document.getElementById('stat-latest-gmv').textContent = latest.gmv || fmtMoney(parseGmv(latest.gmv_raw));
+  document.getElementById('stat-latest-date').textContent = '📅 ' + (latest.date_iso || latest.date || '—');
+  document.getElementById('stat-orders').textContent = (latest.orders != null ? latest.orders.toLocaleString() : '—');
+  document.getElementById('stat-qty').textContent = (latest.qty != null ? latest.qty.toLocaleString() : '—');
+  document.getElementById('stat-reports').textContent = String(manifest.length);
+}
+
+function renderTable(manifest) {
+  const tbody = document.getElementById('report-tbody');
+  tbody.innerHTML = '';
+  if (!manifest || manifest.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">暫無報表 No reports yet</td></tr>';
+    return;
+  }
+  manifest.forEach(function(r) {
+    const isFinal = r.timestamp === '23:59';
+    const badge = isFinal
+      ? '<span class="badge-final">✓ 23:59 最終版</span>'
+      : '<span class="badge-partial">⏳ ' + r.timestamp + '</span>';
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><span class="date">' + (r.date_iso || r.date || '—') + '</span></td>' +
+      '<td><span class="gmv-val">' + (r.gmv || fmtMoney(parseGmv(r.gmv_raw))) + '</span></td>' +
+      '<td>' + (r.orders != null ? r.orders.toLocaleString() : '—') + '</td>' +
+      '<td>' + (r.qty != null ? r.qty.toLocaleString() : '—') + '</td>' +
+      '<td>' + badge + '</td>' +
+      '<td><a class="dl-btn" href="reports/order_reports/' + encodeURIComponent(r.filename) + '" download>' +
+      '📥 下載 XLSX</a></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function renderChart(manifest) {
+  const ctx = document.getElementById('gmvChart');
+  if (!manifest || manifest.length === 0) {
+    ctx.parentElement.innerHTML = '<div class="empty">暫無數據 No data yet</div>';
+    return;
+  }
+  const sorted = manifest.slice().reverse();
+  const labels = sorted.map(function(r) { return (r.date_iso || r.date || '').slice(5); });
+  const data = sorted.map(function(r) { return parseGmv(r.gmv_raw || r.gmv); });
+  if (gmvChart) gmvChart.destroy();
+  gmvChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'GMV',
+        data: data,
+        backgroundColor: 'rgba(231, 76, 60, 0.75)',
+        borderColor: 'rgba(231, 76, 60, 1)',
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ct) { return ' GMV: ' + fmtMoney(ct.parsed.y); }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#9aa3b2' },
+          grid: { color: '#232833' }
+        },
+        y: {
+          ticks: {
+            color: '#9aa3b2',
+            callback: function(v) { return '$' + (v / 1000).toFixed(0) + 'k'; }
+          },
+          grid: { color: '#232833' }
+        }
+      }
+    }
+  });
+}
+
+async function load() {
+  document.getElementById('footer-updated').textContent = new Date().toLocaleString('zh-HK', { hour12: false });
+  try {
+    const resp = await fetch(MANIFEST_URL + '?v=' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const manifest = await resp.json();
+    renderStats(manifest);
+    renderTable(manifest);
+    renderChart(manifest);
+  } catch (e) {
+    document.getElementById('report-tbody').innerHTML =
+      '<tr><td colspan="6" class="empty">⚠️ 無法載入報表資料 Failed to load data: ' + e.message + '</td></tr>';
+  }
+}
+
+load();
+</script>
+</body>
+</html>
