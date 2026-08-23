@@ -7,5 +7,75 @@
     "qty": 527.0,
     "days": 1,
     "filename": "ECOM-MMSNG_DAILY_ORDER_H6183001_202608_MONTHLY.xlsx"
+  },
+  {
+    "month": "2026-07",
+    "label": "7月 2026",
+    "gmv": "$726,528.07",
+    "gmv_raw": 726528.07,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2026-06",
+    "label": "6月 2026",
+    "gmv": "$530,427.57",
+    "gmv_raw": 530427.57,
+    "orders": 0,
+    "qty": 0,
+    "days": 30,
+    "filename": ""
+  },
+  {
+    "month": "2026-05",
+    "label": "5月 2026",
+    "gmv": "$874,102.08",
+    "gmv_raw": 874102.08,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2026-04",
+    "label": "4月 2026",
+    "gmv": "$518,069.49",
+    "gmv_raw": 518069.49,
+    "orders": 0,
+    "qty": 0,
+    "days": 30,
+    "filename": ""
+  },
+  {
+    "month": "2026-03",
+    "label": "3月 2026",
+    "gmv": "$715,413.14",
+    "gmv_raw": 715413.14,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2026-02",
+    "label": "2月 2026",
+    "gmv": "$1,887,035.42",
+    "gmv_raw": 1887035.42,
+    "orders": 0,
+    "qty": 0,
+    "days": 28,
+    "filename": ""
+  },
+  {
+    "month": "2026-01",
+    "label": "1月 2026",
+    "gmv": "$2,532,000.78",
+    "gmv_raw": 2532000.78,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
   }
 ]
