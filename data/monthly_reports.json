@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "month": "2026-08",
+    "label": "8月 2026",
+    "gmv": "$41,557.68",
+    "orders": 369,
+    "qty": 527.0,
+    "days": 1,
+    "filename": "ECOM-MMSNG_DAILY_ORDER_H6183001_202608_MONTHLY.xlsx"
+  }
+]
