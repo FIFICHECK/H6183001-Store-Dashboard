@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-P0068001 Store Dashboard — data processor
+H6183001 Store Dashboard — data processor
 1. Update order_reports_manifest.json (newest-first)
 2. Generate monthly merged reports (reports/monthly/)
 3. Generate sales_trend_data.js (by SKU by daily GMV & QTY)
@@ -11,7 +11,7 @@ import re
 import openpyxl
 from datetime import datetime
 
-BASE = "/home/snkwok/P0068001-Store-Dashboard"
+BASE = "/home/snkwok/H6183001-Store-Dashboard"
 REPORTS_DIR = os.path.join(BASE, "reports", "order_reports")
 MONTHLY_DIR = os.path.join(BASE, "reports", "monthly")
 DATA_DIR = os.path.join(BASE, "data")
@@ -22,7 +22,7 @@ os.makedirs(MONTHLY_DIR, exist_ok=True)
 
 
 def parse_filename(fname):
-    """ECOM-MMSNG_DAILY_ORDER_P0068001_20260802235959.xlsx -> (date_iso, timestamp)"""
+    """ECOM-MMSNG_DAILY_ORDER_H6183001_20260802235959.xlsx -> (date_iso, timestamp)"""
     m = re.search(r"_(\d{8})(\d{6})\.xlsx$", fname)
     if not m:
         return None, None
@@ -71,9 +71,9 @@ def read_orders(path):
             gmv = 0
         name_cn = ws.cell(row=r, column=22).value or ws.cell(row=r, column=21).value or sku_str
         brand_cn = ws.cell(row=r, column=20).value or ws.cell(row=r, column=19).value or ""
-        # Normalize SKU: prepend store prefix P0068001_S_ if not already present
-        if not sku_str.startswith("P0068001_S_"):
-            sku_str = "P0068001_S_" + sku_str
+        # Normalize SKU: prepend store prefix H6183001_S_ if not already present
+        if not sku_str.startswith("H6183001_S_"):
+            sku_str = "H6183001_S_" + sku_str
         rows.append((sku_str, str(brand_cn), str(name_cn), float(qty), float(gmv)))
     return rows
 
@@ -82,7 +82,7 @@ def build_monthly_report(month_key, files):
     """Merge all daily reports of one month into a single xlsx."""
     if not files:
         return None
-    out_path = os.path.join(MONTHLY_DIR, f"ECOM-MMSNG_DAILY_ORDER_P0068001_{month_key.replace('-', '')}_MONTHLY.xlsx")
+    out_path = os.path.join(MONTHLY_DIR, f"ECOM-MMSNG_DAILY_ORDER_H6183001_{month_key.replace('-', '')}_MONTHLY.xlsx")
     wb_out = openpyxl.Workbook()
     ws_out = wb_out.active
     ws_out.title = "hktv_order_list"
@@ -137,7 +137,7 @@ def main():
     files = sorted(
         os.path.join(REPORTS_DIR, f)
         for f in os.listdir(REPORTS_DIR)
-        if f.startswith("ECOM-MMSNG_DAILY_ORDER_P0068001_") and f.endswith(".xlsx")
+        if f.startswith("ECOM-MMSNG_DAILY_ORDER_H6183001_") and f.endswith(".xlsx")
     )
     print(f"Found {len(files)} daily reports")
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>P0068001 Store Dashboard — MUJI Hong Kong</title>
+<title>H6183001 Store Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
@@ -449,13 +449,13 @@
 <div class="container">
   <header>
     <div class="title-block">
-      <div class="logo">MUJI</div>
+      <div class="logo">H6183001</div>
       <div>
-        <h1>P0068001 Store Dashboard</h1>
+        <h1>H6183001 Store Dashboard</h1>
         <div class="subtitle">每日訂單報表 Daily Order Report</div>
       </div>
     </div>
-    <div class="store-badge">🏪 <strong>MUJI Hong Kong</strong> · Designated Online Store</div>
+    <div class="store-badge">🏪 <strong>H6183001</strong> · Daily Order Report</div>
   </header>
 
   <div class="stats-grid">
@@ -586,8 +586,8 @@
 
   <footer>
     <div class="footer-inner">
-      <span class="footer-logo">MUJI</span>
-      <span class="footer-text">P0068001 Store Dashboard</span>
+      <span class="footer-logo">H6183001</span>
+      <span class="footer-text">H6183001 Store Dashboard</span>
       <span class="footer-ver" id="footer-ver">v2.0</span>
       <span class="footer-sep">·</span>
       <span class="footer-text">Data source: MMS 2.0 Daily Order Report</span>
@@ -1246,7 +1246,7 @@ function renderRangeSummary() {
 }
 
 function displaySku(sku) {
-  // Keep full SKU with P0068001_S_ prefix (user wants prefix shown)
+  // Keep full SKU with H6183001_S_ prefix (user wants prefix shown)
   return String(sku);
 }
 
@@ -1338,7 +1338,7 @@ function exportTrendExcel() {
       allQty += (s.qty[mIdx] || 0);
     });
     rows.push(['總計 Total', '', '', Math.round(allGmv * 100) / 100, allQty]);
-    fname = 'P0068001_Sales_Trend_' + monthKey.replace('-', '') + '.xlsx';
+    fname = 'H6183001_Sales_Trend_' + monthKey.replace('-', '') + '.xlsx';
   } else {
     const [sIdx, eIdx] = getRangeIndices();
     const rangeDates = trendData.dates.slice(sIdx, eIdx + 1);
@@ -1361,7 +1361,7 @@ function exportTrendExcel() {
       }
     });
     rows.push(['總計 Total', '', '', Math.round(allGmv * 100) / 100, allQty]);
-    fname = 'P0068001_Sales_Trend_' + rangeDates[0].replace(/-/g, '') + '_' + rangeDates[rangeDates.length - 1].replace(/-/g, '') + '.xlsx';
+    fname = 'H6183001_Sales_Trend_' + rangeDates[0].replace(/-/g, '') + '_' + rangeDates[rangeDates.length - 1].replace(/-/g, '') + '.xlsx';
   }
   const ws = XLSX.utils.aoa_to_sheet(rows);
   // Column widths

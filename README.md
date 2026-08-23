@@ -1,10 +1,10 @@
-# P0068001 Store Dashboard
+# H6183001 Store Dashboard
 
-MUJI Hong Kong Designated Online Store — Daily Order Report Dashboard
+H6183001 — MMS Daily Order Report Dashboard
 
 ## URL
 
-https://fificheck.github.io/P0068001-Store-Dashboard/
+https://fificheck.github.io/H6183001-Store-Dashboard/
 
 ## Features
 
@@ -15,7 +15,7 @@ https://fificheck.github.io/P0068001-Store-Dashboard/
 
 ## Data Flow
 
-1. MMS 2.0 → 訂單報表 → 下載 `ECOM-MMSNG_DAILY_ORDER_P0068001_*.xlsx`（見 `p0068001-daily-order-report` skill）
+1. MMS 2.0 → 訂單報表 → 下載 `ECOM-MMSNG_DAILY_ORDER_H6183001_*.xlsx`（見 `p0068001-daily-order-report` skill）
 2. Copy xlsx → `reports/order_reports/`
 3. 更新 `data/order_reports_manifest.json`（date, gmv, orders, qty, timestamp, filename）
 4. `git add -A && git commit && git push` → GitHub Actions auto-deploy
@@ -31,7 +31,7 @@ https://fificheck.github.io/P0068001-Store-Dashboard/
   "orders": 1063,
   "qty": 1219,
   "timestamp": "23:59",
-  "filename": "ECOM-MMSNG_DAILY_ORDER_P0068001_20260802235959.xlsx"
+  "filename": "ECOM-MMSNG_DAILY_ORDER_H6183001_20260802235959.xlsx"
 }
 ```
 
