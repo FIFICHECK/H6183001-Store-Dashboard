@@ -8,5 +8,15 @@
     "qty": 527,
     "timestamp": "23:59",
     "filename": "ECOM-MMSNG_DAILY_ORDER_H6183001_20260823235959.xlsx"
+  },
+  {
+    "date": "8月17日",
+    "date_iso": "2026-08-17",
+    "gmv": "$6,832.93",
+    "gmv_raw": 6832.93,
+    "orders": 63,
+    "qty": 95,
+    "timestamp": "23:59",
+    "filename": "ECOM-MMSNG_DAILY_ORDER_H6183001_20260817235959.xlsx"
   }
 ]
