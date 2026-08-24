@@ -77,5 +77,225 @@
     "qty": 28240.0,
     "days": 31,
     "filename": ""
+  },
+  {
+    "month": "2025-12",
+    "label": "12月 2025",
+    "gmv": "$696,424.00",
+    "gmv_raw": 696424.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2025-11",
+    "label": "11月 2025",
+    "gmv": "$647,134.00",
+    "gmv_raw": 647134.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 30,
+    "filename": ""
+  },
+  {
+    "month": "2025-10",
+    "label": "10月 2025",
+    "gmv": "$657,018.00",
+    "gmv_raw": 657018.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2025-09",
+    "label": "9月 2025",
+    "gmv": "$1,021,589.00",
+    "gmv_raw": 1021589.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 30,
+    "filename": ""
+  },
+  {
+    "month": "2025-08",
+    "label": "8月 2025",
+    "gmv": "$452,760.00",
+    "gmv_raw": 452760.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2025-07",
+    "label": "7月 2025",
+    "gmv": "$402,064.00",
+    "gmv_raw": 402064.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2025-06",
+    "label": "6月 2025",
+    "gmv": "$354,919.00",
+    "gmv_raw": 354919.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 30,
+    "filename": ""
+  },
+  {
+    "month": "2025-05",
+    "label": "5月 2025",
+    "gmv": "$577,274.00",
+    "gmv_raw": 577274.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2025-04",
+    "label": "4月 2025",
+    "gmv": "$380,494.00",
+    "gmv_raw": 380494.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 30,
+    "filename": ""
+  },
+  {
+    "month": "2025-03",
+    "label": "3月 2025",
+    "gmv": "$457,896.00",
+    "gmv_raw": 457896.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2025-02",
+    "label": "2月 2025",
+    "gmv": "$392,807.00",
+    "gmv_raw": 392807.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 28,
+    "filename": ""
+  },
+  {
+    "month": "2025-01",
+    "label": "1月 2025",
+    "gmv": "$2,599,987.00",
+    "gmv_raw": 2599987.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2024-12",
+    "label": "12月 2024",
+    "gmv": "$1,059,311.00",
+    "gmv_raw": 1059311.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2024-11",
+    "label": "11月 2024",
+    "gmv": "$592,003.00",
+    "gmv_raw": 592003.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 30,
+    "filename": ""
+  },
+  {
+    "month": "2024-10",
+    "label": "10月 2024",
+    "gmv": "$514,706.00",
+    "gmv_raw": 514706.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2024-09",
+    "label": "9月 2024",
+    "gmv": "$624,826.00",
+    "gmv_raw": 624826.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 30,
+    "filename": ""
+  },
+  {
+    "month": "2024-08",
+    "label": "8月 2024",
+    "gmv": "$428,821.00",
+    "gmv_raw": 428821.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2024-07",
+    "label": "7月 2024",
+    "gmv": "$361,289.00",
+    "gmv_raw": 361289.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2024-06",
+    "label": "6月 2024",
+    "gmv": "$384,381.00",
+    "gmv_raw": 384381.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 30,
+    "filename": ""
+  },
+  {
+    "month": "2024-05",
+    "label": "5月 2024",
+    "gmv": "$551,977.00",
+    "gmv_raw": 551977.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
+  },
+  {
+    "month": "2024-04",
+    "label": "4月 2024",
+    "gmv": "$384,953.00",
+    "gmv_raw": 384953.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 30,
+    "filename": ""
+  },
+  {
+    "month": "2024-03",
+    "label": "3月 2024",
+    "gmv": "$437,486.00",
+    "gmv_raw": 437486.0,
+    "orders": 0,
+    "qty": 0,
+    "days": 31,
+    "filename": ""
   }
 ]
