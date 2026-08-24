@@ -1230,13 +1230,21 @@ function setupTrendMonthFilter() {
 function getRangeIndices() {
   const dates = trendData.dates;
   let s = 0, e = dates.length - 1;
+  // Map any date inside 2026-08-01..16 to the aggregate slot '2026-08-01~16' (index 0),
+  // so picking a range like 8/1-8/7 shows the $342,870.65 aggregate, not the whole month.
+  function slotFor(dateStr) {
+    if (dates[0] === '2026-08-01~16' && dateStr >= '2026-08-01' && dateStr <= '2026-08-16') return 0;
+    return -1;
+  }
   if (rangeStart) {
     const idx = dates.indexOf(rangeStart);
     if (idx >= 0) s = idx;
+    else { const m = slotFor(rangeStart); if (m >= 0) s = m; }
   }
   if (rangeEnd) {
     const idx = dates.indexOf(rangeEnd);
     if (idx >= 0) e = idx;
+    else { const m = slotFor(rangeEnd); if (m >= 0) e = m; }
   }
   if (s > e) { const t = s; s = e; e = t; }
   return [s, e];
@@ -1256,7 +1264,10 @@ function renderRangeSummary() {
     el.innerHTML = '';
     return;
   }
-  el.innerHTML = '📅 顯示範圍: <strong>' + dates[0] + '</strong> 至 <strong>' + dates[dates.length - 1] + '</strong>（' + dates.length + ' 日）';
+  function fmtRangeDate(d) {
+    return d === '2026-08-01~16' ? '2026-08-01 ~ 08-16' : d;
+  }
+  el.innerHTML = '📅 顯示範圍: <strong>' + fmtRangeDate(dates[0]) + '</strong> 至 <strong>' + fmtRangeDate(dates[dates.length - 1]) + '</strong>（' + dates.length + ' 日）';
 }
 
 function displaySku(sku) {
