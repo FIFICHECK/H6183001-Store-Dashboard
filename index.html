@@ -1178,9 +1178,12 @@ function setupTrendMonthFilter() {
   }
   sel.innerHTML = '<option value="daily">' + latestLabel + '</option>';
   if (monthlySkuData && monthlySkuData.months) {
+    // 有每日數據嘅月份唔加月度 option（避免 2026-08 重疊出現「每日」+「月度」）
+    const dailyMonths = new Set(trendData && trendData.dates ? trendData.dates.map(function(d) { return d.slice(0, 7); }) : []);
     // Sort months newest first (2026-07 ... 2026-01)
     const months = monthlySkuData.months.slice().sort().reverse();
     months.forEach(function(mk) {
+      if (dailyMonths.has(mk)) return;
       const opt = document.createElement('option');
       opt.value = mk;
       opt.textContent = mk.slice(0, 4) + '年 ' + parseInt(mk.slice(5, 7), 10) + '月（月度）';
