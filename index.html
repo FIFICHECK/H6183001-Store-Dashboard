@@ -657,6 +657,7 @@ function populateReportFilters(manifest) {
     if (y && years.indexOf(y) === -1) years.push(y);
   });
   years.sort();
+  years.sort().reverse();
   yearSel.innerHTML = '<option value="all">🗓️ 全部年份 All Years</option>';
   years.forEach(function(y) {
     const opt = document.createElement('option');
@@ -671,7 +672,7 @@ function populateReportFilters(manifest) {
     const mk = (r.date_iso || '').slice(0, 7);
     if (mk && months.indexOf(mk) === -1) months.push(mk);
   });
-  months.sort();
+  months.sort().reverse();
   monthSel.innerHTML = '<option value="all">🗓️ 全部月份 All Months</option>';
   months.forEach(function(mk) {
     const opt = document.createElement('option');
@@ -818,7 +819,7 @@ function populateMonthFilter(manifest) {
       if (m.month && months.indexOf(m.month) === -1) months.push(m.month);
     });
   }
-  months.sort();
+  months.sort().reverse();
   select.innerHTML = '<option value="all">🗓️ 全部月份 All Months</option>';
   months.forEach(function(mk) {
     const opt = document.createElement('option');
@@ -995,7 +996,7 @@ function setupMonthlyFilter() {
     const y = (m.month || '').slice(0, 4);
     if (y && years.indexOf(y) === -1) years.push(y);
   });
-  years.sort();
+  years.sort().reverse();
   yearSel.innerHTML = '<option value="all">🗓️ 全部年份 All Years</option>';
   years.forEach(function(y) {
     const opt = document.createElement('option');
