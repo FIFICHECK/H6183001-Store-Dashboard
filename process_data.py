@@ -242,7 +242,7 @@ def main():
                 existing_meta = json.load(f)
             existing_months = {m["month"] for m in monthly_meta}
             for em in existing_meta:
-                if em["month"] not in existing_months and not em.get("filename"):
+                if em["month"] not in existing_months:
                     monthly_meta.append(em)
             monthly_meta.sort(key=lambda x: x["month"], reverse=True)
         except Exception as e:
