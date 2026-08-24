@@ -498,6 +498,7 @@
       </select>
     </div>
     <div class="chart-wrap"><canvas id="gmvChart"></canvas></div>
+    <div class="chart-wrap" style="margin-top:26px;"><canvas id="yearlyGmvChart"></canvas></div>
   </div>
 
   <div class="panel">
@@ -611,6 +612,7 @@ const MONTHLY_URL = 'data/monthly_reports.json';
 const TREND_URL = 'data/sales_trend_data.js';
 const MONTHLY_SKU_URL = 'data/monthly_sku_data.js';
 let gmvChart = null;
+let yearlyGmvChart = null;
 let skuGmvChart = null;
 let skuQtyChart = null;
 let trendData = null;
@@ -938,8 +940,70 @@ function renderChart(manifest) {
   });
 }
 
+function renderYearlyGmvChart() {
+  const ctx = document.getElementById('yearlyGmvChart');
+  if (!ctx || !fullMonthly || fullMonthly.length === 0) return;
+  const yearMap = {};
+  fullMonthly.forEach(function(m) {
+    const y = (m.month || '').slice(0, 4);
+    if (!y) return;
+    if (!yearMap[y]) yearMap[y] = { gmv: 0, months: 0 };
+    let raw = m.gmv_raw;
+    if (raw == null) raw = parseFloat(String(m.gmv || '0').replace(/[$,]/g, ''));
+    if (isNaN(raw)) raw = 0;
+    yearMap[y].gmv += raw;
+    yearMap[y].months += 1;
+  });
+  const years = Object.keys(yearMap).sort();
+  const gmvData = years.map(function(y) { return Math.round(yearMap[y].gmv * 100) / 100; });
+  const monthCounts = years.map(function(y) { return yearMap[y].months; });
+  const totalGmv = gmvData.reduce(function(a, b) { return a + b; }, 0);
+
+  if (yearlyGmvChart) yearlyGmvChart.destroy();
+  yearlyGmvChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: years.map(function(y) { return y + '年'; }),
+      datasets: [{
+        label: '年度 GMV',
+        data: gmvData,
+        backgroundColor: 'rgba(193, 0, 46, 0.75)',
+        borderColor: 'rgba(193, 0, 46, 1)',
+        borderWidth: 1,
+        borderRadius: 3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: '📊 Yearly GMV Trend (by Year) · 總計 $' + (totalGmv / 1000000).toFixed(2) + 'M', color: '#2f2f2f', font: { size: 14 } },
+        tooltip: {
+          callbacks: {
+            afterLabel: function(c) {
+              return '月份數: ' + monthCounts[c.dataIndex] + ' 個月';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#8a857e' }, grid: { color: '#e2ddd3' } },
+        y: {
+          ticks: {
+            color: '#8a857e',
+            callback: function(v) { return '$' + (v / 1000000).toFixed(1) + 'M'; }
+          },
+          grid: { color: '#e2ddd3' }
+        }
+      }
+    }
+  });
+}
+
 function renderMonthly(monthly) {
   fullMonthly = monthly || [];
+  renderYearlyGmvChart();
   const tbody = document.getElementById('monthly-tbody');
   const thead = document.getElementById('monthly-thead');
   const scroll = document.getElementById('monthly-scroll');
