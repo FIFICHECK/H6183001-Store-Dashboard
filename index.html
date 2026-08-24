@@ -961,16 +961,21 @@ function renderYearlyGmvChart() {
 
   if (yearlyGmvChart) yearlyGmvChart.destroy();
   yearlyGmvChart = new Chart(ctx, {
-    type: 'bar',
+    type: 'line',
     data: {
       labels: years.map(function(y) { return y + '年'; }),
       datasets: [{
         label: '年度 GMV',
         data: gmvData,
-        backgroundColor: 'rgba(193, 0, 46, 0.75)',
+        backgroundColor: 'rgba(193, 0, 46, 0.12)',
         borderColor: 'rgba(193, 0, 46, 1)',
-        borderWidth: 1,
-        borderRadius: 3
+        borderWidth: 2,
+        pointBackgroundColor: '#fff',
+        pointBorderColor: 'rgba(193, 0, 46, 1)',
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        tension: 0.2,
+        fill: true
       }]
     },
     options: {
@@ -978,7 +983,7 @@ function renderYearlyGmvChart() {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        title: { display: true, text: '📊 Yearly GMV Trend (by Year) · 總計 $' + (totalGmv / 1000000).toFixed(2) + 'M', color: '#2f2f2f', font: { size: 14 } },
+        title: { display: true, text: '📊 GMV 走勢 (按年) - Year GMV Trend · 總計 $' + (totalGmv / 1000000).toFixed(2) + 'M', color: '#2f2f2f', font: { size: 14 } },
         tooltip: {
           callbacks: {
             afterLabel: function(c) {
