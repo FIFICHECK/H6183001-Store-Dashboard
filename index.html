@@ -8,18 +8,18 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root {
-    --bg: #f7f4ee;
-    --bg-card: #ffffff;
-    --bg-hover: #f3efe8;
-    --bg-soft: #faf8f4;
-    --border: #e2ddd3;
-    --text: #2f2f2f;
-    --text-dim: #8a857e;
-    --accent: #c1002e;
-    --accent-dark: #9e0026;
-    --green: #4a7c59;
-    --yellow: #b58900;
-    --qty: #5b6770;
+    --bg: #7a0d1c;
+    --bg-card: #8f1424;
+    --bg-hover: #a21a2c;
+    --bg-soft: #9c1626;
+    --border: #c0354a;
+    --text: #ffffff;
+    --text-dim: #f4cfd5;
+    --accent: #ffd700;
+    --accent-dark: #e0bd00;
+    --green: #7ecb8b;
+    --yellow: #ffd700;
+    --qty: #f4cfd5;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -41,7 +41,7 @@
   }
   .logo {
     background: var(--accent);
-    color: #fff;
+    color: var(--bg);
     padding: 8px 14px;
     border-radius: 4px;
     font-weight: 700;
@@ -49,12 +49,19 @@
     letter-spacing: 2px;
     flex-shrink: 0;
   }
+  .brand-logo {
+    height: 54px;
+    background: #fff;
+    border-radius: 6px;
+    padding: 7px 14px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
   .title-block { display: flex; align-items: center; gap: 16px; }
   h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; color: var(--text); }
   .subtitle { color: var(--text-dim); font-size: 0.85rem; margin-top: 3px; letter-spacing: 0.3px; }
   .store-badge {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 4px;
     padding: 8px 18px;
     font-size: 0.85rem;
@@ -120,7 +127,7 @@
   td .date { font-weight: 700; color: var(--text); }
   td .gmv-val { color: var(--accent); font-weight: 600; }
   .badge-final {
-    background: rgba(74, 124, 89, 0.12);
+    background: rgba(126, 203, 139, 0.18);
     color: var(--green);
     border-radius: 4px;
     padding: 2px 8px;
@@ -128,7 +135,7 @@
     font-weight: 600;
   }
   .badge-partial {
-    background: rgba(181, 137, 0, 0.12);
+    background: rgba(255, 215, 0, 0.18);
     color: var(--yellow);
     border-radius: 4px;
     padding: 2px 8px;
@@ -279,7 +286,7 @@
     position: sticky;
     top: 0;
     z-index: 2;
-    background: #f1ede5;
+    background: var(--bg-hover);
     color: var(--text-dim);
     font-weight: 600;
     text-align: left;
@@ -290,7 +297,7 @@
   }
   .trend-table thead th.date-group {
     text-align: center;
-    background: #eae5db;
+    background: var(--bg-hover);
     color: var(--text);
   }
   .trend-table tbody td {
@@ -376,7 +383,7 @@
     min-width: 90px;
   }
   .month-group-row td {
-    background: #eae5db;
+    background: var(--bg-hover);
     color: var(--text);
     font-weight: 700;
     padding: 8px 12px;
@@ -429,7 +436,7 @@
     background: var(--green);
     margin-left: auto;
   }
-  .rc-btn-green:hover { background: #3d664a; }
+  .rc-btn-green:hover { background: #5aa86a; }
   .range-summary {
     font-size: 0.82rem;
     color: var(--text-dim);
@@ -449,7 +456,7 @@
 <div class="container">
   <header>
     <div class="title-block">
-      <div class="logo">H6183001</div>
+      <img src="assets/anki_logo.png" alt="安記海味 On Kee" class="brand-logo">
       <div>
         <h1>H6183001 Store Dashboard</h1>
         <div class="subtitle">每日訂單報表 Daily Order Report</div>
@@ -888,12 +895,12 @@ function renderChart(manifest) {
       datasets: [{
         label: 'GMV',
         data: data,
-        backgroundColor: chartType === 'bar' ? 'rgba(193, 0, 46, 0.75)' : 'rgba(193, 0, 46, 0.12)',
-        borderColor: 'rgba(193, 0, 46, 1)',
+        backgroundColor: chartType === 'bar' ? 'rgba(255, 215, 0, 0.85)' : 'rgba(255, 215, 0, 0.15)',
+        borderColor: 'rgba(255, 215, 0, 1)',
         borderWidth: 2,
         pointRadius: chartType === 'bar' ? 0 : 5,
         pointBackgroundColor: '#fff',
-        pointBorderColor: 'rgba(193, 0, 46, 1)',
+        pointBorderColor: 'rgba(255, 215, 0, 1)',
         pointBorderWidth: 2,
         tension: 0.3,
         fill: chartType === 'bar' ? false : true,
@@ -904,7 +911,7 @@ function renderChart(manifest) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: chartTitle, color: '#2f2f2f', font: { size: 14 } },
+        title: { display: true, text: chartTitle, color: '#ffffff', font: { size: 14 } },
         legend: { display: false },
         tooltip: {
           callbacks: {
@@ -914,15 +921,15 @@ function renderChart(manifest) {
       },
       scales: {
         x: {
-          ticks: { color: '#8a857e' },
-          grid: { color: '#e2ddd3' }
+          ticks: { color: '#f4cfd5' },
+          grid: { color: '#c0354a' }
         },
         y: {
           ticks: {
-            color: '#8a857e',
+            color: '#f4cfd5',
             callback: function(v) { return '$' + (v / 1000).toFixed(0) + 'k'; }
           },
-          grid: { color: '#e2ddd3' }
+          grid: { color: '#c0354a' }
         }
       }
     }
@@ -1084,8 +1091,8 @@ function renderSkuCharts(sku, mIdx) {
       datasets: [{
         label: 'GMV',
         data: gmvData,
-        backgroundColor: 'rgba(193, 0, 46, 0.75)',
-        borderColor: 'rgba(193, 0, 46, 1)',
+        backgroundColor: 'rgba(255, 215, 0, 0.85)',
+        borderColor: 'rgba(255, 215, 0, 1)',
         borderWidth: 1,
         borderRadius: 6
       }]
@@ -1094,15 +1101,15 @@ function renderSkuCharts(sku, mIdx) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: gmvTitle, color: '#2f2f2f', font: { size: 14 } },
+        title: { display: true, text: gmvTitle, color: '#ffffff', font: { size: 14 } },
         legend: { display: false },
         tooltip: {
           callbacks: { label: function(ct) { return ' GMV: ' + fmtMoney(ct.parsed.y); } }
         }
       },
       scales: {
-        x: { ticks: { color: '#8a857e' }, grid: { color: '#e2ddd3' } },
-        y: { ticks: { color: '#8a857e' }, grid: { color: '#e2ddd3' } }
+        x: { ticks: { color: '#f4cfd5' }, grid: { color: '#c0354a' } },
+        y: { ticks: { color: '#f4cfd5' }, grid: { color: '#c0354a' } }
       }
     }
   });
@@ -1115,8 +1122,8 @@ function renderSkuCharts(sku, mIdx) {
       datasets: [{
         label: 'QTY',
         data: qtyData,
-        backgroundColor: 'rgba(91, 103, 112, 0.75)',
-        borderColor: 'rgba(91, 103, 112, 1)',
+        backgroundColor: 'rgba(244, 207, 213, 0.85)',
+        borderColor: 'rgba(244, 207, 213, 1)',
         borderWidth: 1,
         borderRadius: 6
       }]
@@ -1125,15 +1132,15 @@ function renderSkuCharts(sku, mIdx) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        title: { display: true, text: qtyTitle, color: '#2f2f2f', font: { size: 14 } },
+        title: { display: true, text: qtyTitle, color: '#ffffff', font: { size: 14 } },
         legend: { display: false },
         tooltip: {
           callbacks: { label: function(ct) { return ' QTY: ' + ct.parsed.y.toLocaleString(); } }
         }
       },
       scales: {
-        x: { ticks: { color: '#8a857e' }, grid: { color: '#e2ddd3' } },
-        y: { ticks: { color: '#8a857e' }, grid: { color: '#e2ddd3' } }
+        x: { ticks: { color: '#f4cfd5' }, grid: { color: '#c0354a' } },
+        y: { ticks: { color: '#f4cfd5' }, grid: { color: '#c0354a' } }
       }
     }
   });
