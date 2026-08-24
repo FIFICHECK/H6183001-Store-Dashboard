@@ -2,11 +2,15 @@
   {
     "month": "2026-08",
     "label": "8月 2026",
-    "gmv": "$135,829.47",
+    "gmv": "$478,700.12",
+    "gmv_raw": 478700.12,
     "orders": 1417,
-    "qty": 1951.0,
-    "days": 7,
-    "filename": "ECOM-MMSNG_DAILY_ORDER_H6183001_202608_MONTHLY.xlsx"
+    "qty": 6804.0,
+    "days": 23,
+    "filename": "ECOM-MMSNG_DAILY_ORDER_H6183001_202608_MONTHLY.xlsx",
+    "jerry_backfill": 342870.65,
+    "jerry_backfill_qty": 4853,
+    "jerry_backfill_days": 16
   },
   {
     "month": "2026-07",

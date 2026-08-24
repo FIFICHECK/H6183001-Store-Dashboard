@@ -168,6 +168,18 @@ def main():
             "timestamp": ts,
             "filename": fname,
         })
+    # Preserve aggregate entries without a source XLSX (e.g. 2026-08-01~16 jerry backfill)
+    if os.path.exists(MANIFEST_PATH):
+        try:
+            with open(MANIFEST_PATH, encoding="utf-8") as f:
+                existing_manifest = json.load(f)
+            existing_keys = {m["date_iso"] for m in manifest}
+            for em in existing_manifest:
+                if em["date_iso"] not in existing_keys and not em.get("filename"):
+                    manifest.append(em)
+            manifest.sort(key=lambda x: x["date_iso"], reverse=True)
+        except Exception as e:
+            print(f"Warning: could not merge existing manifest: {e}")
     with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)
     print(f"Manifest: {len(manifest)} entries, latest {manifest[0]['date_iso']} GMV {manifest[0]['gmv']}")
@@ -188,6 +200,7 @@ def main():
                 "month": mk,
                 "label": f"{int(mk[5:7])}月 {mk[:4]}",
                 "gmv": f"${gmv:,.2f}",
+                "gmv_raw": gmv,
                 "orders": lines,
                 "qty": qty,
                 "days": len(by_month[mk]),
@@ -197,9 +210,32 @@ def main():
 
     monthly_meta.sort(key=lambda x: x["month"], reverse=True)
 
+    # Apply jerry-dashboard backfill to months that have a jerry_backfill marker.
+    # Keeps the backfill across cron rebuilds so monthly totals stay complete.
+    existing_path = os.path.join(DATA_DIR, "monthly_reports.json")
+    if os.path.exists(existing_path):
+        try:
+            with open(existing_path, encoding="utf-8") as f:
+                existing_meta2 = json.load(f)
+            existing_by_month = {m["month"]: m for m in existing_meta2}
+            for mm in monthly_meta:
+                em = existing_by_month.get(mm["month"])
+                if em and em.get("jerry_backfill") and mm.get("filename"):
+                    bf = em["jerry_backfill"]
+                    raw = (mm.get("gmv_raw") or 0.0) + bf
+                    mm["gmv_raw"] = round(raw, 2)
+                    mm["gmv"] = f"${raw:,.2f}"
+                    mm["qty"] = (mm.get("qty") or 0) + em.get("jerry_backfill_qty", 0)
+                    mm["days"] = (mm.get("days") or 0) + em.get("jerry_backfill_days", 0)
+                    mm["jerry_backfill"] = bf
+                    mm["jerry_backfill_qty"] = em.get("jerry_backfill_qty", 0)
+                    mm["jerry_backfill_days"] = em.get("jerry_backfill_days", 0)
+                    print(f"Monthly {mm['month']}: applied jerry backfill +${bf:,.2f} -> {mm['gmv']}")
+        except Exception as e:
+            print(f"Warning: could not apply jerry backfill: {e}")
+
     # Preserve monthly-only entries (imported via import_monthly_csv.py, e.g. 2026-01..07)
     # These have no daily XLSX so they are not in by_month; merge them back in.
-    existing_path = os.path.join(DATA_DIR, "monthly_reports.json")
     if os.path.exists(existing_path):
         try:
             with open(existing_path, encoding="utf-8") as f:
@@ -252,6 +288,38 @@ def main():
         "dates": dates,
         "skus": sku_list,
     }
+
+    # Merge jerry-dashboard 8/1-16 backfill column (data/jerry_aug_1_16_backfill.json)
+    # Prepend a '2026-08-01~16' aggregate date + add jerry-only SKUs (no MMS rows 8/17-23).
+    bf_path = os.path.join(DATA_DIR, "jerry_aug_1_16_backfill.json")
+    if os.path.exists(bf_path):
+        try:
+            with open(bf_path, encoding="utf-8") as f:
+                bf_list = json.load(f)
+            bf_skus = {b["sku"]: b for b in bf_list}
+            existing_skus = {s["sku"] for s in sku_list}
+            new_skus = []
+            for s in sku_list:
+                bf = bf_skus.get(s["sku"], {"gmv": 0, "qty": 0})
+                new_skus.append({
+                    "sku": s["sku"], "brand": s["brand"], "name": s["name"],
+                    "gmv": [bf["gmv"]] + s["gmv"],
+                    "qty": [bf["qty"]] + s["qty"],
+                })
+            for sc, bf in bf_skus.items():
+                if sc not in existing_skus:
+                    new_skus.append({
+                        "sku": sc, "brand": "安記海味", "name": bf["name"],
+                        "gmv": [bf["gmv"]] + [0.0] * len(dates),
+                        "qty": [bf["qty"]] + [0] * len(dates),
+                    })
+            new_skus.sort(key=lambda s: -sum(s["gmv"]))
+            trend = {"dates": ["2026-08-01~16"] + dates, "skus": new_skus}
+            bf_total = sum(b["gmv"] for b in bf_list)
+            print(f"Sales Trend: merged jerry 8/1-16 backfill +${bf_total:,.2f} ({len(bf_skus)} SKUs)")
+        except Exception as e:
+            print(f"Warning: could not merge jerry backfill: {e}")
+
     with open(TREND_PATH, "w", encoding="utf-8") as f:
         f.write("window.salesTrendData = ")
         json.dump(trend, f, ensure_ascii=False)

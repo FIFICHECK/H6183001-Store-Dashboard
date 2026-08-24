@@ -736,14 +736,16 @@ function renderTable(manifest) {
         ? '<span class="badge-final">✓ 23:59 最終版</span>'
         : '<span class="badge-partial">⏳ ' + r.timestamp + '</span>';
       const tr = document.createElement('tr');
+      const dl = r.filename
+        ? '<a class="dl-btn" href="reports/order_reports/' + encodeURIComponent(r.filename) + '" download>📥 下載 XLSX</a>'
+        : '<span style="color:var(--text-dim);font-size:0.78rem;">估算 backfill</span>';
       tr.innerHTML =
         '<td><span class="date">' + (r.date_iso || r.date || '—') + '</span></td>' +
         '<td><span class="gmv-val">' + (r.gmv || fmtMoney(parseGmv(r.gmv_raw))) + '</span></td>' +
         '<td>' + (r.orders != null ? r.orders.toLocaleString() : '—') + '</td>' +
         '<td>' + (r.qty != null ? r.qty.toLocaleString() : '—') + '</td>' +
         '<td>' + badge + '</td>' +
-        '<td><a class="dl-btn" href="reports/order_reports/' + encodeURIComponent(r.filename) + '" download>' +
-        '📥 下載 XLSX</a></td>';
+        '<td>' + dl + '</td>';
       tbody.appendChild(tr);
     });
   });

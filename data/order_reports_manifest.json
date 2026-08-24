@@ -68,5 +68,15 @@
     "qty": 95,
     "timestamp": "23:59",
     "filename": "ECOM-MMSNG_DAILY_ORDER_H6183001_20260817235959.xlsx"
+  },
+  {
+    "date": "8月1-16日",
+    "date_iso": "2026-08-01~16",
+    "gmv": "$342,870.65",
+    "gmv_raw": 342870.65,
+    "orders": 0,
+    "qty": 4853,
+    "timestamp": "jerry GP",
+    "filename": ""
   }
 ]
