@@ -854,8 +854,8 @@ function renderChart(manifest) {
     // Add monthly-only months from fullMonthly (e.g. 2026-01..07)
     (fullMonthly || []).forEach(function(m) {
       if (!m.month || m.days === 0) return; // days=0 means monthly-only (no daily breakdown)
-      if (!monthMap[m.month]) monthMap[m.month] = 0;
-      monthMap[m.month] += parseGmv(m.gmv_raw || m.gmv);
+      if (monthMap[m.month] !== undefined) return; // already has daily/aggregate data — skip to avoid double count
+      monthMap[m.month] = parseGmv(m.gmv_raw || m.gmv);
     });
     // Ensure all monthly entries present (even days=0)
     (fullMonthly || []).forEach(function(m) {
