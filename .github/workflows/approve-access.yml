@@ -1,0 +1,52 @@
+name: Approve Access
+
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: 'Email to approve'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN || github.token }}
+
+      - name: Add email to allowlist
+        shell: bash
+        run: |
+          EMAIL="${{ github.event.inputs.email }}"
+          EMAIL=$(echo "$EMAIL" | tr '[:upper:]' '[:lower:]' | xargs)
+          python3 - "$EMAIL" <<'EOF'
+          import json, sys
+          email = sys.argv[1]
+          path = 'data/access_allowlist.json'
+          with open(path, encoding='utf-8') as f:
+              lst = json.load(f)
+          norm = [str(e).strip().lower() for e in lst]
+          if email not in norm:
+              lst.append(email)
+              with open(path, 'w', encoding='utf-8') as f:
+                  json.dump(lst, f, ensure_ascii=False, indent=2)
+              print(f"APPROVED: {email}")
+          else:
+              print(f"ALREADY_APPROVED: {email}")
+          EOF
+
+      - name: Commit & push
+        shell: bash
+        run: |
+          EMAIL="${{ github.event.inputs.email }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/access_allowlist.json
+          git commit -m "🔐 Approve access: ${EMAIL}" || echo "NO_CHANGES"
+          git push origin main || echo "PUSH_NO_CHANGE"
