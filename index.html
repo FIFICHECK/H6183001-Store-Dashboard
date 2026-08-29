@@ -711,10 +711,10 @@ async function initGate() {
   input.addEventListener('keydown', function(ev) { if (ev.key === 'Enter') submitGateRequest(); });
 }
 
-const MANIFEST_URL = 'data/order_reports_manifest.json';
-const MONTHLY_URL = 'data/monthly_reports.json';
-const TREND_URL = 'data/sales_trend_data.js';
-const MONTHLY_SKU_URL = 'data/monthly_sku_data.js';
+const MANIFEST_URL = 'https://fificheck-access-gate.fificheck.workers.dev/data?site=H6183001&path=data/order_reports_manifest.json';
+const MONTHLY_URL = 'https://fificheck-access-gate.fificheck.workers.dev/data?site=H6183001&path=data/monthly_reports.json';
+const TREND_URL = 'https://fificheck-access-gate.fificheck.workers.dev/data?site=H6183001&path=data/sales_trend_data.json';
+const MONTHLY_SKU_URL = 'https://fificheck-access-gate.fificheck.workers.dev/data?site=H6183001&path=data/monthly_sku_data.json';
 let gmvChart = null;
 let yearlyGmvChart = null;
 let skuGmvChart = null;
@@ -1339,15 +1339,14 @@ function renderSkuCharts(sku, mIdx) {
 
 function loadTrend() {
   // Load monthly by-SKU data (2026-01..07) first
-  const mScript = document.createElement('script');
-  mScript.src = MONTHLY_SKU_URL + '?v=' + Date.now();
-  mScript.onload = function() {
-    monthlySkuData = window.monthlySkuData || null;
-    // Then load daily trend data
-    const script = document.createElement('script');
-    script.src = TREND_URL + '?v=' + Date.now();
-    script.onload = function() {
-      trendData = window.salesTrendData;
+  (async function() {
+    try {
+      const mr = await dataFetch(MONTHLY_SKU_URL);
+      monthlySkuData = mr.ok ? await mr.json() : null;
+    } catch (e) { monthlySkuData = null; }
+    try {
+      const tr = await dataFetch(TREND_URL);
+      trendData = tr.ok ? await tr.json() : null;
       if (!trendData || !trendData.skus || trendData.skus.length === 0) {
         document.querySelector('.trend-controls').innerHTML = '<div class="empty">暫無 SKU 數據 No SKU data</div>';
         return;
@@ -1360,11 +1359,8 @@ function loadTrend() {
       renderSkuCharts(null);
       renderTrendTable(trendData.skus);
       setupRangeControls();
-    };
-    document.body.appendChild(script);
-  };
-  document.body.appendChild(mScript);
 }
+
 
 function setupTrendMonthFilter() {
   const sel = document.getElementById('trend-month-filter');
@@ -1677,11 +1673,26 @@ function setupTrendControls() {
   });
 }
 
+// 🔒 Private data (B pilot): worker + HMAC session cookie
+    function dataFetch(u) {
+      return fetch(u + (u.indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now(), { credentials: 'include' });
+    }
+    async function loadSession() {
+      const saved = localStorage.getItem('h6_gate_email');
+      if (!saved) throw new Error('no gate email');
+      const r = await fetch('https://fificheck-access-gate.fificheck.workers.dev/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ site: 'H6183001', email: saved }),
+        credentials: 'include'
+      });
+      if (!r.ok) throw new Error('session ' + r.status);
+    }
 async function load() {
   initGate();
   document.getElementById('footer-updated').textContent = new Date().toLocaleString('zh-HK', { hour12: false });
   try {
-    const resp = await fetch(MANIFEST_URL + '?v=' + Date.now());
+    const resp = await dataFetch(MANIFEST_URL);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const manifest = await resp.json();
     fullManifest = manifest;
@@ -1690,7 +1701,7 @@ async function load() {
     renderStats(manifest);
     renderTable(manifest);
     // Load monthly reports
-    const mresp = await fetch(MONTHLY_URL + '?v=' + Date.now());
+    const mresp = await dataFetch(MONTHLY_URL);
     if (mresp.ok) {
       renderMonthly(await mresp.json());
       setupMonthlyFilter();
@@ -1715,8 +1726,13 @@ async function load() {
       '<tr><td colspan="6" class="empty">⚠️ 無法載入報表資料 Failed to load data: ' + e.message + '</td></tr>';
   }
 }
-
-load();
+loadSession()
+    .then(function() { load(); })
+    .catch(function(e) {
+      console.error('session init failed', e);
+      var st = document.getElementById('gate-status');
+      if (st) st.textContent = '⚠️ 請先完成訪問申請（email 未授權或 session 過期）';
+    });
 </script>
 </body>
 </html>

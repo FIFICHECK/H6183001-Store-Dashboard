@@ -28,3 +28,8 @@ job_logs/
 
 # Reports XLSX (private — never commit to public repo)
 reports/**/*.xlsx
+
+
+# B pilot (2026-08-29): data 移去 private repo (dashboard-private-data)
+data/*
+!data/access_allowlist.json
