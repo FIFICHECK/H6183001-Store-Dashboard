@@ -25,3 +25,6 @@ Thumbs.db
 # Logs
 *.log
 job_logs/
+
+# Reports XLSX (private — never commit to public repo)
+reports/**/*.xlsx

@@ -563,7 +563,7 @@
   <div class="panel">
     <div class="panel-title">📄 訂單報表 &nbsp;<span style="color:var(--text-dim);font-size:0.8rem;font-weight:400;">Order Reports</span></div>
     <div class="panel-desc" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <span>點擊下載 XLSX 原始檔案（優先 23:59 最終版）</span>
+      <span>點擊下載 XLSX 原始檔案（需授權 · 優先 23:59 最終版）</span>
       <select id="report-year-filter" class="sku-select" style="min-width:110px;margin-left:auto;">
         <option value="all">🗓️ 全部年份 All Years</option>
       </select>
@@ -677,15 +677,16 @@ async function initGate() {
   const gate = document.getElementById('access-gate');
   const status = document.getElementById('gate-status');
   const saved = localStorage.getItem('h6_gate_email');
-  let list = [];
-  try {
-    const r = await fetch(ALLOWLIST_URL + '?v=' + Date.now());
-    if (r.ok) list = await r.json();
-  } catch (e) { /* offline — fall through to gate */ }
-  const norm = list.map(String).map(function(s) { return s.trim().toLowerCase(); });
-  if (saved && norm.indexOf(saved.toLowerCase()) >= 0) {
-    gate.style.display = 'none';
-    return;
+  // server-side 授權檢查（私有 allowlist，防君子 + 防一般黑客）
+  if (saved) {
+    try {
+      const r = await fetch('https://fificheck-access-gate.fificheck.workers.dev/check?site=H6183001&email=' + encodeURIComponent(saved));
+      const j = await r.json();
+      if (j && j.allowed) {
+        gate.style.display = 'none';
+        return;
+      }
+    } catch (e) { /* fall through to gate */ }
   }
   gate.style.display = 'flex';
   const input = document.getElementById('gate-email');
@@ -851,7 +852,7 @@ function renderTable(manifest) {
         : '<span class="badge-partial">⏳ ' + r.timestamp + '</span>';
       const tr = document.createElement('tr');
       const dl = r.filename
-        ? '<a class="dl-btn" href="reports/order_reports/' + encodeURIComponent(r.filename) + '" download>📥 下載 XLSX</a>'
+        ? '<a class="dl-btn" href="javascript:void(0)" onclick="downloadReport(\'' + r.filename + '\')">📥 下載 XLSX</a>'
         : '<span style="color:var(--text-dim);font-size:0.78rem;">估算 backfill</span>';
       tr.innerHTML =
         '<td><span class="date">' + (r.date_iso || r.date || '—') + '</span></td>' +
@@ -886,22 +887,37 @@ function setupReportFilters() {
   }
 }
 
+// 🔐 授權下載（server-side 檢查 → 私有 XLSX）
+function downloadReport(filename) {
+  const email = localStorage.getItem('h6_gate_email') || '';
+  if (!email) { alert('請先喺鎖頁輸入 Email 申請訪問'); return; }
+  fetch('https://fificheck-access-gate.fificheck.workers.dev/download?site=H6183001&file=' + encodeURIComponent(filename) + '&email=' + encodeURIComponent(email))
+    .then(function(r) {
+      if (r.status === 403) { alert('❌ 未授權：此 Email 未獲批准下載。'); throw new Error('403'); }
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.blob();
+    })
+    .then(function(blob) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    })
+    .catch(function(e) { if (e.message !== '403') alert('❌ 下載失敗：' + e.message); });
+}
+
 function batchDownloadReports() {
   const filtered = applyReportFilters(fullManifest);
   if (filtered.length === 0) {
     alert('沒有符合 filter 嘅報表 No reports match filters');
     return;
   }
-  // Download each daily XLSX file (no need to click each one)
   let count = 0;
   filtered.forEach(function(r) {
     if (!r.filename) return;
-    const a = document.createElement('a');
-    a.href = 'reports/order_reports/' + encodeURIComponent(r.filename);
-    a.download = r.filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    downloadReport(r.filename);
     count++;
   });
   alert('已開始下載 ' + count + ' 份每日報表 XLSX（如瀏覽器詢問，請允許多個下載）');
@@ -1152,7 +1168,7 @@ function renderMonthly(monthly) {
       '<td>' + (m.qty != null ? Number(m.qty).toLocaleString() : '—') + '</td>' +
       '<td><span class="badge-final">✓ 23:59 最終版</span></td>' +
       (m.filename
-        ? '<td><a class="dl-btn" href="reports/monthly/' + encodeURIComponent(m.filename) + '" download>📥 下載 XLSX</a></td>'
+        ? '<td><a class="dl-btn" href="javascript:void(0)" onclick="downloadReport(\'' + m.filename + '\')">📥 下載 XLSX</a></td>'
         : '<td><span style="color:var(--text-dim);font-size:0.78rem;">—</span></td>') +
       '</tr>';
   });
