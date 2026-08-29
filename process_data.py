@@ -8,6 +8,7 @@ H6183001 Store Dashboard — data processor
 import json
 import os
 import re
+import sys
 import openpyxl
 from datetime import datetime
 
@@ -48,6 +49,36 @@ def extract_stats(path):
         if isinstance(q, (int, float)):
             qty += q
     return gmv, lines, int(qty)
+
+
+# Customer PII columns in the MMS DAILY order report (1-indexed)
+PII_COLS = {29: "Recipient Name", 30: "Contact Number", 31: "Delivery Address"}
+# Header labels that can appear as repeated rows inside merged monthly files (not real PII)
+PII_HEADER_LABELS = {"recipient name", "contact number", "delivery address"}
+
+
+def check_pii(path):
+    """Scan an order report xlsx for real customer data in the PII columns.
+
+    Returns a list of (row, column_label, sample_value). Repeated header rows
+    (value equals the header label) are ignored — they appear when monthly
+    merged files copy header rows as data.
+    """
+    wb = openpyxl.load_workbook(path, data_only=True)
+    ws = wb.active
+    hits = []
+    for r in range(6, ws.max_row + 1):
+        for c, colname in PII_COLS.items():
+            v = ws.cell(row=r, column=c).value
+            if v is None:
+                continue
+            sv = str(v).strip()
+            if not sv:
+                continue
+            if sv.lower() in PII_HEADER_LABELS:
+                continue
+            hits.append((r, colname, sv[:20]))
+    return hits
 
 
 def read_orders(path):
@@ -140,6 +171,25 @@ def main():
         if f.startswith("ECOM-MMSNG_DAILY_ORDER_H6183001_") and f.endswith(".xlsx")
     )
     print(f"Found {len(files)} daily reports")
+
+    # 🔒 PII guard: block processing if any report contains customer data
+    # (Recipient Name / Contact Number / Delivery Address must stay out of the public repo)
+    pii_files = []
+    for fpath in files:
+        try:
+            hits = check_pii(fpath)
+        except Exception as e:
+            print(f"Warning: PII check failed for {os.path.basename(fpath)}: {e}")
+            continue
+        if hits:
+            pii_files.append((os.path.basename(fpath), len(hits)))
+    if pii_files:
+        print("❌❌ PII DETECTED — refusing to continue (customer data must NOT be pushed to public repo):")
+        for fn, n in pii_files:
+            print(f"   - {fn}: {n} cells with recipient name / phone / address")
+        print("→ Strip the customer columns from the XLSX or move the file out of reports/order_reports/ first.")
+        sys.exit(2)
+    print("PII check: clean ✅ (no customer data in reports)")
 
     # Group by date, prefer 23:59 (final) per date
     by_date = {}
