@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://formsubmit.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://formsubmit.co https://fificheck-access-gate.fificheck.workers.dev; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
 <title>H6183001 Store Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"></script>
@@ -694,23 +694,14 @@ async function initGate() {
     if (!email || email.indexOf('@') < 1) { status.textContent = '⚠️ 請輸入有效 Email'; return; }
     status.textContent = '⏳ 送出申請中…';
     const adminEmail = decodeAdminEmail();
-    // 一次性 token（防 approve URL 被猜）
-    const token = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
-    const approveLink = location.origin + location.pathname.replace(/[^/]*$/, '') + 'approve.html?email=' + encodeURIComponent(email) + '&t=' + encodeURIComponent(token);
     try {
-      await fetch('https://formsubmit.co/ajax/' + adminEmail, {
+      await fetch('https://fificheck-access-gate.fificheck.workers.dev/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({
-          email: email,
-          _subject: '🔐 H6183001 Dashboard 訪問申請',
-          _template: 'table',
-          _captcha: 'false',
-          '✅ 批准訪問 (Approve)': approveLink
-        })
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ site: 'H6183001', email: email })
       });
       localStorage.setItem('h6_gate_email', email.toLowerCase());
-      status.textContent = '✅ 已送出申請！管理員批准後，重新整理此頁即可進入。';
+      status.textContent = '✅ 已送出申請！管理員一撳批准，你重新整理此頁即可進入。';
     } catch (e) {
       status.textContent = '❌ 送出失敗 — 請直接 email ' + adminEmail;
     }
