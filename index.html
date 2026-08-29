@@ -698,8 +698,7 @@ async function initGate() {
           email: email,
           _subject: '🔐 H6183001 Dashboard 訪問申請',
           _template: 'table',
-          _captcha: 'false',
-          'Approve Link (click to approve)': 'https://github.com/FIFICHECK/H6183001-Store-Dashboard/actions/workflows/approve-access.yml'
+          _captcha: 'false'
         })
       });
       localStorage.setItem('h6_gate_email', email.toLowerCase());
