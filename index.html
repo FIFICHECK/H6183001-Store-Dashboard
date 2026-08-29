@@ -452,9 +452,67 @@
     .panel { padding: 16px; }
     .chart-wrap { height: 250px; }
   }
+
+  /* 🔒 Access gate */
+  #access-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #f7f4ee;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .gate-box {
+    background: #ffffff;
+    border: 1px solid #e2ddd3;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    padding: 36px 32px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+  }
+  .gate-box img { max-height: 60px; margin-bottom: 14px; }
+  .gate-box h2 { color: #2f2f2f; margin: 0 0 10px; font-size: 1.25rem; }
+  .gate-box p { color: #8a857e; font-size: 0.9rem; margin: 0 0 20px; line-height: 1.6; }
+  .gate-box input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid #e2ddd3;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    color: #2f2f2f;
+  }
+  .gate-box button {
+    width: 100%;
+    padding: 11px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #c1002e;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .gate-box button:hover { background: #a50027; }
+  #gate-status { margin-top: 14px; font-size: 0.9rem; min-height: 1.2em; }
 </style>
 </head>
 <body>
+<div id="access-gate">
+  <div class="gate-box">
+    <img src="assets/anki_logo.png" alt="安記海味 On Kee">
+    <h2>🔒 受保護的 Dashboard</h2>
+    <p>此 Dashboard 只供獲授權人士查閱。<br>請輸入你的 Email 申請訪問權限，管理員批准後即可進入。</p>
+    <input type="email" id="gate-email" placeholder="你的 Email" autocomplete="email">
+    <button id="gate-submit">申請訪問</button>
+    <p id="gate-status"></p>
+  </div>
+</div>
 <div class="container">
   <header>
     <div class="title-block">
@@ -608,6 +666,51 @@
 </div>
 
 <script>
+// 🔒 Access gate (方案 A: email 申請 → admin approve → allowlist)
+const ALLOWLIST_URL = 'data/access_allowlist.json';
+const GATE_ADMIN_EMAIL = 'jerry@hktv.com.hk';   // 收訪問申請通知
+
+async function initGate() {
+  const gate = document.getElementById('access-gate');
+  const status = document.getElementById('gate-status');
+  const saved = localStorage.getItem('h6_gate_email');
+  let list = [];
+  try {
+    const r = await fetch(ALLOWLIST_URL + '?v=' + Date.now());
+    if (r.ok) list = await r.json();
+  } catch (e) { /* offline — fall through to gate */ }
+  const norm = list.map(String).map(function(s) { return s.trim().toLowerCase(); });
+  if (saved && norm.indexOf(saved.toLowerCase()) >= 0) {
+    gate.style.display = 'none';
+    return;
+  }
+  gate.style.display = 'flex';
+  const input = document.getElementById('gate-email');
+  async function submitGateRequest() {
+    const email = input.value.trim();
+    if (!email || email.indexOf('@') < 1) { status.textContent = '⚠️ 請輸入有效 Email'; return; }
+    status.textContent = '⏳ 送出申請中…';
+    try {
+      await fetch('https://formsubmit.co/ajax/' + GATE_ADMIN_EMAIL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          _subject: '🔐 H6183001 Dashboard 訪問申請',
+          _template: 'table',
+          _captcha: 'false'
+        })
+      });
+      localStorage.setItem('h6_gate_email', email.toLowerCase());
+      status.textContent = '✅ 已送出申請！管理員批准後，重新整理此頁即可進入。';
+    } catch (e) {
+      status.textContent = '❌ 送出失敗 — 請直接 email ' + GATE_ADMIN_EMAIL;
+    }
+  }
+  document.getElementById('gate-submit').addEventListener('click', submitGateRequest);
+  input.addEventListener('keydown', function(ev) { if (ev.key === 'Enter') submitGateRequest(); });
+}
+
 const MANIFEST_URL = 'data/order_reports_manifest.json';
 const MONTHLY_URL = 'data/monthly_reports.json';
 const TREND_URL = 'data/sales_trend_data.js';
@@ -1560,6 +1663,7 @@ function setupTrendControls() {
 }
 
 async function load() {
+  initGate();
   document.getElementById('footer-updated').textContent = new Date().toLocaleString('zh-HK', { hour12: false });
   try {
     const resp = await fetch(MANIFEST_URL + '?v=' + Date.now());
