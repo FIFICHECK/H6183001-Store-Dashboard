@@ -1359,6 +1359,8 @@ function loadTrend() {
       renderSkuCharts(null);
       renderTrendTable(trendData.skus);
       setupRangeControls();
+    } catch (e) { console.error('trend load failed', e); }
+  })();
 }
 
 
