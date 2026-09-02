@@ -724,7 +724,7 @@ let skuQtyChart = null;
 let trendData = null;
 let monthlySkuData = null;
 let currentSku = null;
-let currentTrendMode = 'daily'; // 'daily' or 'monthly' (month key e.g. 2026-01)
+let currentTrendMode = 'daily'; // 'daily'(全部每日) | 'd:YYYY-MM'(指定月份每日) | 'm:YYYY-MM'(月度)
 let fullManifest = [];
 let rangeStart = null;
 let rangeEnd = null;
@@ -1247,19 +1247,22 @@ function renderSkuCharts(sku, mIdx) {
     }
   } else {
     const dates = trendData.dates;
-    labels = dates.map(function(d) { return d.slice(5); });
+    // 每日 mode：跟 getRangeIndices()（全部日期 or 指定月份 or date range）
+    const sIdx = getRangeIndices()[0];
+    const eIdx = getRangeIndices()[1];
+    labels = dates.slice(sIdx, eIdx + 1).map(function(d) { return d.slice(5); });
     if (!sku) {
       skuLabel = '全部 SKU All SKUs';
-      gmvData = dates.map(function(_, i) {
-        return trendData.skus.reduce(function(a, s) { return a + (s.gmv[i] || 0); }, 0);
+      gmvData = dates.slice(sIdx, eIdx + 1).map(function(_, i) {
+        return trendData.skus.reduce(function(a, s) { return a + (s.gmv[i + sIdx] || 0); }, 0);
       });
-      qtyData = dates.map(function(_, i) {
-        return trendData.skus.reduce(function(a, s) { return a + (s.qty[i] || 0); }, 0);
+      qtyData = dates.slice(sIdx, eIdx + 1).map(function(_, i) {
+        return trendData.skus.reduce(function(a, s) { return a + (s.qty[i + sIdx] || 0); }, 0);
       });
     } else {
       skuLabel = displaySku(sku.sku) + ' — ' + sku.name;
-      gmvData = sku.gmv;
-      qtyData = sku.qty;
+      gmvData = sku.gmv.slice(sIdx, eIdx + 1);
+      qtyData = sku.qty.slice(sIdx, eIdx + 1);
     }
   }
   const totalGmv = gmvData.reduce(function(a, b) { return a + b; }, 0);
@@ -1355,9 +1358,15 @@ function loadTrend() {
       }
       setupTrendMonthFilter();
       buildSkuOptions(trendData.skus);
-      // Default: All SKU (show all + aggregate chart)
+      // Default: 最新月份（每日）— 只 show 該月，唔好加埋之前月份（用戶要求 2026-09-02）
       currentSku = null;
       document.getElementById('sku-select').value = 'all';
+      const trendSel = document.getElementById('trend-month-filter');
+      if (trendSel && trendSel.value && trendSel.value !== 'daily') {
+        currentTrendMode = trendSel.value; // e.g. 'd:2026-09'
+      }
+      const rangeWrap = document.querySelector('.range-controls');
+      if (currentTrendMode.indexOf('d:') === 0 && rangeWrap) rangeWrap.style.display = 'none';
       renderSkuCharts(null);
       renderTrendTable(trendData.skus);
       setupRangeControls();
@@ -1369,23 +1378,42 @@ function loadTrend() {
 function setupTrendMonthFilter() {
   const sel = document.getElementById('trend-month-filter');
   if (!sel) return;
-  // Latest month label from daily trend data (e.g. 2026-08)
-  let latestLabel = '最新月份（每日）Daily';
+  // 1) 每個有每日數據嘅月份 → 「（每日）」option（最新排先）＋ default 揀最新月份
+  // 2) 「全部日期（每日）」fallback option
+  // 3) 月度 options（有每日數據嘅月份唔重複加月度）
+  const dailyMonthKeys = [];
   if (trendData && trendData.dates && trendData.dates.length > 0) {
-    const lastDate = trendData.dates[trendData.dates.length - 1];
-    const mk = lastDate.slice(0, 7);
-    latestLabel = mk.slice(0, 4) + '年 ' + parseInt(mk.slice(5, 7), 10) + '月（每日）';
+    const seen = {};
+    trendData.dates.forEach(function(d) {
+      const mk = d.slice(0, 7);
+      if (mk && !seen[mk] && !d.includes('~')) { seen[mk] = 1; dailyMonthKeys.push(mk); }
+    });
+    dailyMonthKeys.sort().reverse(); // newest first
   }
-  sel.innerHTML = '<option value="daily">' + latestLabel + '</option>';
+  let html = '';
+  // Default: 最新月份（每日）— 只 show 該月，唔好加埋之前月份
+  if (dailyMonthKeys.length > 0) {
+    const latestMk = dailyMonthKeys[0];
+    const latestLabel = latestMk.slice(0, 4) + '年 ' + parseInt(latestMk.slice(5, 7), 10) + '月（每日）';
+    html += '<option value="d:' + latestMk + '">' + latestLabel + '（當月）</option>';
+    // 其他有每日數據嘅月份
+    dailyMonthKeys.slice(1).forEach(function(mk) {
+      const label = mk.slice(0, 4) + '年 ' + parseInt(mk.slice(5, 7), 10) + '月（每日）';
+      html += '<option value="d:' + mk + '">' + label + '</option>';
+    });
+  } else {
+    html += '<option value="daily">全部日期（每日）Daily</option>';
+  }
+  html += '<option value="daily">🗓️ 全部日期（每日）All Daily</option>';
+  sel.innerHTML = html;
+  // 月度 options
   if (monthlySkuData && monthlySkuData.months) {
-    // 有每日數據嘅月份唔加月度 option（避免 2026-08 重疊出現「每日」+「月度」）
-    const dailyMonths = new Set(trendData && trendData.dates ? trendData.dates.map(function(d) { return d.slice(0, 7); }) : []);
-    // Sort months newest first (2026-07 ... 2026-01)
+    const dailyMonths = new Set(dailyMonthKeys);
     const months = monthlySkuData.months.slice().sort().reverse();
     months.forEach(function(mk) {
-      if (dailyMonths.has(mk)) return;
+      if (dailyMonths.has(mk)) return; // 有每日數據唔加月度（避免重疊）
       const opt = document.createElement('option');
-      opt.value = mk;
+      opt.value = 'm:' + mk;
       opt.textContent = mk.slice(0, 4) + '年 ' + parseInt(mk.slice(5, 7), 10) + '月（月度）';
       sel.appendChild(opt);
     });
@@ -1393,22 +1421,27 @@ function setupTrendMonthFilter() {
   sel.addEventListener('change', function() {
     currentTrendMode = sel.value;
     const rangeWrap = document.querySelector('.range-controls');
+    currentSku = null;
+    document.getElementById('sku-select').value = 'all';
     if (currentTrendMode === 'daily') {
+      // 全部日期（每日）
       if (rangeWrap) rangeWrap.style.display = '';
-      buildSkuOptions(trendData.skus);
-      currentSku = null;
-      document.getElementById('sku-select').value = 'all';
       renderSkuCharts(null);
       renderTrendTable(trendData.skus);
       setupRangeControls();
-    } else {
+    } else if (currentTrendMode.indexOf('d:') === 0) {
+      // 指定月份（每日）— 只 show 該月，range controls 唔 apply
       if (rangeWrap) rangeWrap.style.display = 'none';
-      // Use monthly data for selected month
-      const mIdx = monthlySkuData.months.indexOf(currentTrendMode);
+      rangeStart = null; rangeEnd = null;
+      renderSkuCharts(null);
+      renderTrendTable(trendData.skus);
+    } else if (currentTrendMode.indexOf('m:') === 0) {
+      // 月度模式
+      if (rangeWrap) rangeWrap.style.display = 'none';
+      const monthKey = currentTrendMode.slice(2);
+      const mIdx = monthlySkuData.months.indexOf(monthKey);
       if (mIdx >= 0) {
         buildSkuOptions(monthlySkuData.skus);
-        currentSku = null;
-        document.getElementById('sku-select').value = 'all';
         renderSkuCharts(null, mIdx);
         renderTrendTable(monthlySkuData.skus, mIdx);
       }
@@ -1419,7 +1452,16 @@ function setupTrendMonthFilter() {
 function getRangeIndices() {
   const dates = trendData.dates;
   let s = 0, e = dates.length - 1;
-  // Map any date inside 2026-08-01..16 to the aggregate slot '2026-08-01~16' (index 0),
+  // 指定月份（每日）mode：直接 lock 喺該月範圍（唔理 rangeStart/rangeEnd）
+  if (currentTrendMode && currentTrendMode.indexOf('d:') === 0) {
+    const mk = currentTrendMode.slice(2);
+    let found = false;
+    for (let i = 0; i < dates.length; i++) {
+      if (dates[i].slice(0, 7) === mk) { if (!found) s = i; found = true; e = i; }
+    }
+    if (found) return [s, e];
+  }
+  // Map any date inside 8/1-16 to the aggregate slot '2026-08-01~16' (index 0),
   // so picking a range like 8/1-8/7 shows the $342,870.65 aggregate, not the whole month.
   function slotFor(dateStr) {
     if (dates[0] === '2026-08-01~16' && dateStr >= '2026-08-01' && dateStr <= '2026-08-16') return 0;
@@ -1535,11 +1577,11 @@ function exportTrendExcel() {
     alert('Excel library not loaded yet — 請稍候再試');
     return;
   }
-  const isMonthly = (currentTrendMode !== 'daily' && monthlySkuData);
+  const isMonthly = (currentTrendMode && currentTrendMode.indexOf('m:') === 0 && monthlySkuData);
   let rows, fname, exportSkus;
   if (isMonthly) {
-    const mIdx = monthlySkuData.months.indexOf(currentTrendMode);
-    const monthKey = monthlySkuData.months[mIdx];
+    const monthKey = currentTrendMode.slice(2);
+    const mIdx = monthlySkuData.months.indexOf(monthKey);
     const label = monthKey.slice(0, 4) + '年' + parseInt(monthKey.slice(5, 7), 10) + '月';
     rows = [['SKU', 'Brand name (中文)', 'SKU Name (CHI)', 'GMV', 'QTY', '月份', label]];
     exportSkus = (currentTableSkus && currentTableSkus.length > 0) ? currentTableSkus : monthlySkuData.skus;
@@ -1629,14 +1671,14 @@ function setupTrendControls() {
   const search = document.getElementById('sku-search');
 
   function getActiveSkus() {
-    if (currentTrendMode !== 'daily' && monthlySkuData) {
+    if (currentTrendMode && currentTrendMode.indexOf('m:') === 0 && monthlySkuData) {
       return monthlySkuData.skus;
     }
     return trendData.skus;
   }
   function getActiveMIdx() {
-    if (currentTrendMode !== 'daily' && monthlySkuData) {
-      return monthlySkuData.months.indexOf(currentTrendMode);
+    if (currentTrendMode && currentTrendMode.indexOf('m:') === 0 && monthlySkuData) {
+      return monthlySkuData.months.indexOf(currentTrendMode.slice(2));
     }
     return undefined;
   }
