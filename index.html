@@ -1365,8 +1365,7 @@ function loadTrend() {
       if (trendSel && trendSel.value && trendSel.value !== 'daily') {
         currentTrendMode = trendSel.value; // e.g. 'd:2026-09'
       }
-      const rangeWrap = document.querySelector('.range-controls');
-      if (currentTrendMode.indexOf('d:') === 0 && rangeWrap) rangeWrap.style.display = 'none';
+      // Date Range + 下載 Excel 一直顯示（唔隱藏）
       renderSkuCharts(null);
       renderTrendTable(trendData.skus);
       setupRangeControls();
@@ -1430,9 +1429,8 @@ function setupTrendMonthFilter() {
       renderTrendTable(trendData.skus);
       setupRangeControls();
     } else if (currentTrendMode.indexOf('d:') === 0) {
-      // 指定月份（每日）— 只 show 該月，range controls 唔 apply
-      if (rangeWrap) rangeWrap.style.display = 'none';
-      rangeStart = null; rangeEnd = null;
+      // 指定月份（每日）— default show 該月；Date Range / 下載 Excel 照常可用
+      if (rangeWrap) rangeWrap.style.display = '';
       renderSkuCharts(null);
       renderTrendTable(trendData.skus);
     } else if (currentTrendMode.indexOf('m:') === 0) {
@@ -1452,14 +1450,14 @@ function setupTrendMonthFilter() {
 function getRangeIndices() {
   const dates = trendData.dates;
   let s = 0, e = dates.length - 1;
-  // 指定月份（每日）mode：直接 lock 喺該月範圍（唔理 rangeStart/rangeEnd）
+  // 指定月份（每日）mode：default 範圍 = 該月（但 rangeStart/rangeEnd 可以 override）
   if (currentTrendMode && currentTrendMode.indexOf('d:') === 0) {
     const mk = currentTrendMode.slice(2);
     let found = false;
     for (let i = 0; i < dates.length; i++) {
       if (dates[i].slice(0, 7) === mk) { if (!found) s = i; found = true; e = i; }
     }
-    if (found) return [s, e];
+    // 唔 return — 落去俾 rangeStart/rangeEnd override（用戶揀咗範圍就尊重）
   }
   // Map any date inside 8/1-16 to the aggregate slot '2026-08-01~16' (index 0),
   // so picking a range like 8/1-8/7 shows the $342,870.65 aggregate, not the whole month.
@@ -1642,7 +1640,7 @@ function setupRangeControls() {
   applyBtn.addEventListener('click', function() {
     rangeStart = startEl.value || null;
     rangeEnd = endEl.value || null;
-    if (currentTrendMode !== 'daily') return; // range only applies to daily mode
+    if (currentTrendMode && currentTrendMode.indexOf('m:') === 0) return; // range only applies to daily modes
     renderTrendTable(trendData.skus);
     renderSkuCharts(currentSku);
   });
@@ -1651,7 +1649,7 @@ function setupRangeControls() {
     endEl.value = '';
     rangeStart = null;
     rangeEnd = null;
-    if (currentTrendMode !== 'daily') return;
+    if (currentTrendMode && currentTrendMode.indexOf('m:') === 0) return;
     renderTrendTable(trendData.skus);
     renderSkuCharts(currentSku);
   });
